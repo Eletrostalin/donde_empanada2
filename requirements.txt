@@ -1,0 +1,9 @@
+fastapi==0.100.0
+uvicorn==0.22.0
+sqlalchemy==2.0.20
+psycopg2-binary==2.9.9
+pydantic==2.0.3
+passlib[bcrypt]==1.7.4  # Для хэширования паролей
+python-jose==3.3.0  # Для работы с JWT
+alembic==1.11.1  # Для миграций базы данных
+python-dotenv==1.0.0
