@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 import axios from 'axios';
 
-const Map = () => {
+const Map = ({ isAuthenticated, setShowRegistrationModal }) => {
   const [locations, setLocations] = useState([]);
-  const [map, setMap] = useState(null); // Добавляем состояние для карты
+  const [map, setMap] = useState(null);
+  const [showAddLocationForm, setShowAddLocationForm] = useState(false);
+  const [clickedPosition, setClickedPosition] = useState(null);
+
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY, // Используем API ключ из env
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
   // Функция для определения местоположения
@@ -18,8 +21,8 @@ const Map = () => {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
-          map.panTo(pos); // Перемещаем карту на определенное местоположение
-          map.setZoom(12); // Масштабируем карту
+          map.panTo(pos);
+          map.setZoom(12);
         },
         () => {
           alert('Не удалось определить местоположение.');
@@ -57,15 +60,14 @@ const Map = () => {
     fetchLocations();
   }, []);
 
-
   // Обработчик клика на карте
   const handleMapClick = (event) => {
-    if (isAuthenticated) {  // Проверяем авторизацию
+    if (isAuthenticated) {
       setClickedPosition({
         lat: event.latLng.lat(),
-        lng: event.latLng.lng()
+        lng: event.latLng.lng(),
       });
-      setShowAddLocationForm(true);  // Показываем форму добавления локации
+      setShowAddLocationForm(true);
     } else {
       alert('Только авторизованные пользователи могут добавлять локации.');
     }
@@ -78,13 +80,13 @@ const Map = () => {
     const name = formData.get('name');
 
     try {
-      await axios.post('http://127.0.0.1:8000/add-location', {
+      await axios.post('http://127.0.0.1:8000/locations', {
         name,
         latitude: clickedPosition.lat,
         longitude: clickedPosition.lng,
       });
 
-      setShowAddLocationForm(false); // Скрываем форму после добавления
+      setShowAddLocationForm(false);
       alert('Локация успешно добавлена!');
     } catch (error) {
       console.error('Ошибка при добавлении локации:', error);
@@ -96,11 +98,11 @@ const Map = () => {
   const mapOptions = {
     zoom: 12,
     center: { lat: 51.1657, lng: 10.4515 },
-    disableDefaultUI: true,   // Отключает все стандартные элементы управления карты
-    zoomControl: false,       // Отключает стандартные кнопки зума
-    mapTypeControl: false,    // Отключает выбор типа карты (например, "Карта", "Спутник")
-    fullscreenControl: false, // Отключает кнопку полноэкранного режима
-    streetViewControl: false, // Отключает элемент управления панорамой (Street View)
+    disableDefaultUI: true,
+    zoomControl: false,
+    mapTypeControl: false,
+    fullscreenControl: false,
+    streetViewControl: false,
   };
 
   return (
@@ -108,7 +110,8 @@ const Map = () => {
       <GoogleMap
         options={mapOptions}
         mapContainerStyle={{ width: '100%', height: '100vh' }}
-        onLoad={mapInstance => setMap(mapInstance)}
+        onLoad={(mapInstance) => setMap(mapInstance)}
+        onClick={handleMapClick}  // Обрабатываем клик на карте
       >
         {locations.map((location) => (
           <Marker
@@ -128,6 +131,23 @@ const Map = () => {
           <img src="/zoom_out.png" alt="Zoom Out" style={{ width: '40px', height: '40px', marginTop: '10px' }} />
         </div>
       </div>
+
+      {/* Модальное окно для добавления локации */}
+      {showAddLocationForm && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Добавить новую локацию</h3>
+            <form onSubmit={handleAddLocationSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Название локации</label>
+                <input type="text" name="name" id="name" placeholder="Введите название" required />
+              </div>
+              <button type="submit" className="btn-primary">Добавить локацию</button>
+              <button type="button" className="btn-secondary" onClick={() => setShowAddLocationForm(false)}>Отмена</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

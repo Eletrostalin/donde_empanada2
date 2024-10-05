@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -14,6 +15,10 @@ from ..database import get_db
 SECRET_KEY = "your_secret_key_here"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Настраиваем логирование
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/auth",
@@ -48,10 +53,12 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 # Регистрация пользователя
 @router.post("/register")
 async def register_user(user: schemas.RegistrationSchema, db: Session = Depends(get_db)):
+    logger.info(f"Регистрация пользователя: {user.username}, email: {user.email}")
     stmt = select(models.User).where(models.User.username == user.username)
     result = await db.execute(stmt)
     db_user = result.scalar_one_or_none()
     if db_user:
+        logger.warning(f"Пользователь {user.username} уже зарегистрирован")
         raise HTTPException(status_code=400, detail="Username already registered")
 
     hashed_password = hash_password(user.password)
@@ -61,8 +68,9 @@ async def register_user(user: schemas.RegistrationSchema, db: Session = Depends(
         password_hash=hashed_password,
         first_name=user.first_name,
         second_name=user.second_name,
-        phone_hash=hash_password(user.phone),  # Хэширование телефона, если нужно
+        phone_hash=hash_password(user.phone),  # Хэширование телефона
     )
+    logger.info(f"Создан новый пользователь: {user.username}")
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
@@ -72,11 +80,13 @@ async def register_user(user: schemas.RegistrationSchema, db: Session = Depends(
 # Логин пользователя
 @router.post("/login")
 async def login_user(form_data: schemas.LoginSchema, db: Session = Depends(get_db)):
+    logger.info(f"Попытка входа пользователя: {form_data.username}")
     stmt = select(models.User).where(models.User.username == form_data.username)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
     if not user or not verify_password(form_data.password, user.password_hash):
+        logger.warning(f"Неверное имя пользователя или пароль для {form_data.username}")
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     # Генерация JWT токена
@@ -84,6 +94,7 @@ async def login_user(form_data: schemas.LoginSchema, db: Session = Depends(get_d
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
+    logger.info(f"Пользователь {form_data.username} успешно вошел в систему")
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -110,4 +121,5 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
     if user is None:
         raise credentials_exception
 
+    logger.info(f"Текущий пользователь: {user.username}")
     return user

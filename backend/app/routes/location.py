@@ -1,104 +1,125 @@
+import hashlib
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from ..config import GOOGLE_MAPS_API_KEY
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
 
 from .. import models, schemas
 from ..database import get_db
-from .auth import get_current_user
+
+# Секретный ключ для подписи JWT
+SECRET_KEY = "your_secret_key_here"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Настраиваем логирование
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/locations",
-    tags=["locations"]
+    prefix="/auth",
+    tags=["auth"]
 )
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-# Создание новой локации (только для зарегистрированных пользователей)
-@router.post("/add-location", response_model=schemas.LocationSchema)
-async def create_location(location: schemas.LocationSchema, db: AsyncSession = Depends(get_db),
-                          current_user=Depends(get_current_user)):
-    # Создаем новую локацию с нуля, указывая необходимые значения
-    new_location = models.Location(
-        name=location.name,
-        latitude=location.latitude,  # Широта передается с фронта
-        longitude=location.longitude,  # Долгота передается с фронта
-        average_rating=0,  # Средний рейтинг по умолчанию 0
-        rating_count=0,  # Количество оценок по умолчанию 0
-        address=location.address,  # Адрес заполняется пользователем (опционально)
-        working_hours_start=location.working_hours_start,  # Время начала работы
-        working_hours_end=location.working_hours_end,  # Время окончания работы
-        average_check=location.average_check,  # Средний чек (опционально)
-        created_by=current_user.id  # ID пользователя берется автоматически из current_user
+
+# Функция для хэширования пароля с помощью hashlib (SHA-256)
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+# Функция для проверки пароля
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return hash_password(plain_password) == hashed_password
+
+
+# Функция для создания JWT токена
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+# Регистрация пользователя
+@router.post("/register")
+async def register_user(user: schemas.RegistrationSchema, db: Session = Depends(get_db)):
+    logger.info(f"Регистрация пользователя: {user.username}, email: {user.email}")
+    stmt = select(models.User).where(models.User.username == user.username)
+    result = await db.execute(stmt)
+    db_user = result.scalar_one_or_none()
+    if db_user:
+        logger.warning(f"Пользователь {user.username} уже зарегистрирован")
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    hashed_password = hash_password(user.password)
+    new_user = models.User(
+        username=user.username,
+        email=user.email,
+        password_hash=hashed_password,
+        first_name=user.first_name,
+        second_name=user.second_name,
+        phone_hash=hash_password(user.phone),  # Хэширование телефона
     )
-
-    # Добавляем новую локацию в сессию и сохраняем в базе данных
-    db.add(new_location)
+    logger.info(f"Создан новый пользователь: {user.username}")
+    db.add(new_user)
     await db.commit()
-    await db.refresh(new_location)  # Обновляем объект, чтобы получить все поля (например, id)
-
-    # Возвращаем созданную локацию
-    return new_location
+    await db.refresh(new_user)
+    return {"message": "User registered successfully"}
 
 
-# Получение списка всех локаций (публичный маршрут)
-@router.get("/", response_model=list[schemas.LocationSchema])
-async def get_locations(db: AsyncSession = Depends(get_db)):
-    stmt = select(models.Location)
+# Логин пользователя
+@router.post("/login")
+async def login_user(form_data: schemas.LoginSchema, db: Session = Depends(get_db)):
+    logger.info(f"Попытка входа пользователя: {form_data.username}")
+    stmt = select(models.User).where(models.User.username == form_data.username)
     result = await db.execute(stmt)
-    locations = result.scalars().all()
-    return locations
+    user = result.scalar_one_or_none()
+
+    if not user or not verify_password(form_data.password, user.password_hash):
+        logger.warning(f"Неверное имя пользователя или пароль для {form_data.username}")
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+
+    # Генерация JWT токена
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    logger.info(f"Пользователь {form_data.username} успешно вошел в систему")
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
-# Получение конкретной локации по ID (публичный маршрут)
-@router.get("/{location_id}", response_model=schemas.LocationSchema)
-async def get_location(location_id: int, db: AsyncSession = Depends(get_db)):
-    stmt = select(models.Location).where(models.Location.id == location_id)
+# Получение текущего пользователя
+@router.get("/me")
+async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    stmt = select(models.User).where(models.User.username == username)
     result = await db.execute(stmt)
-    location = result.scalar_one_or_none()
-    if location is None:
-        raise HTTPException(status_code=404, detail="Location not found")
-    return location
+    user = result.scalar_one_or_none()
 
+    if user is None:
+        raise credentials_exception
 
-# Обновление информации о локации (для всех зарегистрированных пользователей)
-@router.put("/{location_id}", response_model=schemas.LocationSchema)
-async def update_location(location_id: int, location_data: schemas.LocationSchema, db: AsyncSession = Depends(get_db),
-                          current_user=Depends(get_current_user)):
-    stmt = select(models.Location).where(models.Location.id == location_id)
-    result = await db.execute(stmt)
-    location = result.scalar_one_or_none()
-
-    if location is None:
-        raise HTTPException(status_code=404, detail="Location not found")
-
-    # Обновляем информацию о локации
-    location.name = location_data.name
-    location.address = location_data.address
-    location.working_hours_start = location_data.working_hours_start
-    location.working_hours_end = location_data.working_hours_end
-    location.average_check = location_data.average_check
-
-    await db.commit()
-    await db.refresh(location)
-    return location
-
-
-# Удаление локации (только для администраторов, сейчас объявим функцию с pass)
-@router.delete("/{location_id}")
-async def delete_location(location_id: int, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
-    # Проверка роли администратора
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    stmt = select(models.Location).where(models.Location.id == location_id)
-    result = await db.execute(stmt)
-    location = result.scalar_one_or_none()
-
-    if location is None:
-        raise HTTPException(status_code=404, detail="Location not found")
-
-    # Пока реализуем как pass, позже добавим удаление
-    pass
-
-
+    logger.info(f"Текущий пользователь: {user.username}")
+    return user

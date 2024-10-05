@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .config import GOOGLE_MAPS_API_KEY
@@ -44,3 +46,18 @@ async def root():
 @app.get("/google-maps-key")
 def get_google_maps_key():
     return {"google_maps_api_key": GOOGLE_MAPS_API_KEY}
+
+# Обработчик ошибок валидации
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    # Форматируем ошибки для удобства пользователя
+    errors = []
+    for error in exc.errors():
+        loc = " -> ".join([str(l) for l in error['loc']])
+        msg = error['msg']
+        errors.append(f"{loc}: {msg}")
+
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Validation errors", "errors": errors}
+    )
