@@ -49,7 +49,6 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
 # Регистрация пользователя
 @router.post("/register")
 async def register_user(user: schemas.RegistrationSchema, db: Session = Depends(get_db)):
@@ -76,7 +75,6 @@ async def register_user(user: schemas.RegistrationSchema, db: Session = Depends(
     await db.refresh(new_user)
     return {"message": "User registered successfully"}
 
-
 # Логин пользователя
 @router.post("/login")
 async def login_user(form_data: schemas.LoginSchema, db: Session = Depends(get_db)):
@@ -96,7 +94,6 @@ async def login_user(form_data: schemas.LoginSchema, db: Session = Depends(get_d
     )
     logger.info(f"Пользователь {form_data.username} успешно вошел в систему")
     return {"access_token": access_token, "token_type": "bearer"}
-
 
 # Получение текущего пользователя
 @router.get("/me")

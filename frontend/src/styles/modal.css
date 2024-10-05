@@ -1,0 +1,70 @@
+/* Модальное окно */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  padding: 18px;
+  border: 1px solid #888;
+  width: 30%;
+  border-radius: 10px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.modal-content .form-group {
+  margin-bottom: 8px;
+}
+
+.modal-content label {
+  margin-bottom: 4px;
+  font-weight: bold;
+  color: #dd362f;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+.modal-content button {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 12px;
+}
+
+.modal-content button.btn-primary {
+  background-color: #dd362f;
+  border: none;
+  color: #fff;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content button.btn-primary:hover {
+  background-color: #c3322b;
+}
+
+.owner-form {
+  position: absolute;
+  right: -40%;
+  top: 0;
+  width: 35%;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}

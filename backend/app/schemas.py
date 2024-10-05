@@ -45,6 +45,15 @@ class LocationSchema(BaseModel):
     class Config:
         orm_mode = True
 
+class OwnerInfoSchema(BaseModel):
+    location_id: int
+    website: Optional[str] = Field(None, max_length=200, description="Вебсайт владельца")
+    owner_info: str = Field(..., description="Информация о владельце")
+
+    class Config:
+        orm_mode = True
+
+
 # Модель для отзывов
 class ReviewSchema(BaseModel):
     rating: int = Field(..., ge=1, le=5)

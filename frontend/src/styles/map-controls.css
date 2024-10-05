@@ -1,0 +1,41 @@
+/* Стили для всех кнопок управления картой */
+.gm-style button {
+  border: none;
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.gm-style button:hover {
+  opacity: 0.8;
+}
+
+.custom-button-right {
+  position: absolute;
+  right: 20px;
+  background-color: transparent;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.custom-button-right img {
+  width: 40px;
+  height: 40px;
+}
+
+#add-marker {
+  top: 100px;
+}
+
+#my-location {
+  top: 170px;
+}
+
+#zoom-controls {
+  top: 350px;
+}
+
+#zoom-controls div {
+  margin-bottom: 10px;
+}

@@ -1,0 +1,38 @@
+/* header */
+header {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  right: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  z-index: 2;
+  border-radius: 24px;
+  padding: 0 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+header img {
+  cursor: pointer;
+  height: 50px;
+}
+
+/* Кнопка войти */
+header button {
+  background-color: white;
+  color: #000;
+  padding: 5px 32px;
+  border: 2px solid #dd362f;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+header button:hover {
+  background-color: #dd362f;
+  color: white;
+  border-color: #c3322b;
+}
