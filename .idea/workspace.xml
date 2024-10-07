@@ -4,38 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dcbfc4d9-8785-4665-aa2b-d5a01bdf34da" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/donde_empanada.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/database.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/routes/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/routes/auth.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/routes/location.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/app/schemas.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/4.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/5.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/add.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/location.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/marker.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/profile.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/zoom_in.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/public/zoom_out.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/map.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="dcbfc4d9-8785-4665-aa2b-d5a01bdf34da" name="Changes" comment="decomposing the map module and adding the location form">
+      <change afterPath="$PROJECT_DIR$/frontend/src/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/routes/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/routes/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/routes/location.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/routes/location.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/Header.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/Header.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/LocationForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/LocationForm.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/map.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/map.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,6 +28,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -64,24 +42,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/nickstanchenkov/donde_empanada5/donde_empanada/frontend/public"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/nickstanchenkov/donde_empanada5/donde_empanada&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/frontend/public" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frontend/src" />
-      <recent name="$PROJECT_DIR$/frontend/static" />
+      <recent name="$PROJECT_DIR$/frontend/styles" />
       <recent name="$PROJECT_DIR$/frontend" />
+      <recent name="$PROJECT_DIR$/frontend/static" />
       <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/frontend/frontend/src" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -100,6 +79,47 @@
       <option name="presentableId" value="Default" />
       <updated>1727793258140</updated>
     </task>
+    <task id="LOCAL-00001" summary="The database is connected, and authorization and registration have been implemented">
+      <option name="closed" value="true" />
+      <created>1728065851407</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1728065851407</updated>
+    </task>
+    <task id="LOCAL-00002" summary="decomposing the map module and adding the location form">
+      <option name="closed" value="true" />
+      <created>1728120161297</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1728120161297</updated>
+    </task>
+    <task id="LOCAL-00003" summary="decomposing the map module and adding the location form">
+      <option name="closed" value="true" />
+      <created>1728161524323</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1728161524323</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="The database is connected, and authorization and registration have been implemented" />
+    <MESSAGE value="decomposing the map module and adding the location form" />
+    <option name="LAST_COMMIT_MESSAGE" value="decomposing the map module and adding the location form" />
   </component>
 </project>

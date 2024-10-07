@@ -120,3 +120,25 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
 
     logger.info(f"Текущий пользователь: {user.username}")
     return user
+
+# Маршрут для обновления access токена на основе refresh токена
+@router.post("/refresh", response_model=schemas.Token)
+async def refresh_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+    # Возвращаем объект, соответствующий схеме Token
+    return {"access_token": encoded_jwt, "token_type": "bearer"}
+
+# Проверяем refresh token
+def verify_refresh_token(refresh_token: str):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid refresh token"
+        )

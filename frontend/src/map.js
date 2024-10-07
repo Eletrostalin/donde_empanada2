@@ -82,44 +82,6 @@ const Map = ({ isAuthenticated, setShowRegistrationModal }) => {
     }
   };
 
-  // Функция для отправки формы добавления локации
-  const handleAddLocationSubmit = async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const name = formData.get('name');
-    const address = formData.get('address');
-    const working_hours_start = formData.get('working_hours_start');
-    const working_hours_end = formData.get('working_hours_end');
-    const average_check = formData.get('average_check');
-
-    try {
-      await axios.post(
-        'http://127.0.0.1:8000/locations',
-        {
-          name,
-          address,
-          working_hours_start,
-          working_hours_end,
-          average_check,
-          latitude: clickedPosition.lat,
-          longitude: clickedPosition.lng,
-          created_at: new Date().toISOString(),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Добавляем токен в заголовок
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      setShowAddLocationForm(false);
-      alert('Локация успешно добавлена!');
-    } catch (error) {
-      console.error('Ошибка при добавлении локации:', error);
-    }
-  };
-
   if (!isLoaded) return <div>Загрузка карты...</div>;
 
   const mapOptions = {
@@ -150,8 +112,8 @@ const Map = ({ isAuthenticated, setShowRegistrationModal }) => {
       {/* Форма добавления локации */}
       {showAddLocationForm && (
         <LocationForm
-          handleAddLocationSubmit={handleAddLocationSubmit}
           setShowAddLocationForm={setShowAddLocationForm}
+          clickedPosition={clickedPosition} // Передаем выбранную позицию в форму
         />
       )}
     </div>

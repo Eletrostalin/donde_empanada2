@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { checkAndRefreshToken } from './auth'; // Импорт функции из файла auth.js
 
-const LocationForm = ({ handleAddLocationSubmit, setShowAddLocationForm }) => {
+const LocationForm = ({ setShowAddLocationForm, clickedPosition }) => {
   const [showOwnerForm, setShowOwnerForm] = useState(false);
   const [ownerData, setOwnerData] = useState({
     website: '',
@@ -17,27 +18,40 @@ const LocationForm = ({ handleAddLocationSubmit, setShowAddLocationForm }) => {
     });
   };
 
-  // Обработчик отправки формы владельца
-  const handleOwnerSubmit = async () => {
-    try {
-      const response = await axios.post('http://127.0.0.1:8000/owner-info', ownerData, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('authToken')}` // Добавляем токен для аутентификации
-        }
-      });
+  // Обработчик отправки формы локации
+  const handleAddLocationSubmit = async (event) => {
+    event.preventDefault();
+    await checkAndRefreshToken(); // Проверка и обновление токена перед запросом
 
-      alert('Информация о владельце успешно отправлена!');
-      setShowOwnerForm(false);
+    const locationData = {
+      name: event.target.name.value,
+      address: event.target.address.value,
+      working_hours_start: event.target.working_hours_start.value,
+      working_hours_end: event.target.working_hours_end.value,
+      average_check: parseInt(event.target.average_check.value, 10),
+      latitude: clickedPosition.lat, // Координаты переданы через пропсы
+      longitude: clickedPosition.lng, // Координаты переданы через пропсы
+      owner_info: ownerData.owner_info || null,
+      website: ownerData.website || null
+    };
+
+    const dataToSend = { location: locationData };
+
+     try {
+        const response = await axios.post('http://127.0.0.1:8000/locations/add-location', dataToSend, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            },
+            withCredentials: true,
+        });
+        alert('Локация добавлена');
+        setShowAddLocationForm(false);
     } catch (error) {
-      if (error.response && error.response.data.detail) {
-        setErrors(error.response.data.detail); // Устанавливаем ошибки
-      } else {
-        console.error('Ошибка при отправке информации о владельце:', error);
-        setErrors(['Произошла ошибка при отправке информации.']);
-      }
+        console.error('Ошибка при добавлении локации:', error);
+        setErrors(['Произошла ошибка при добавлении локации']);
     }
-  };
+};
 
   return (
     <div className="modal">
@@ -90,16 +104,10 @@ const LocationForm = ({ handleAddLocationSubmit, setShowAddLocationForm }) => {
                   name="owner_info"
                   id="owner_info"
                   placeholder="Введите информацию о себе"
-                  required
                   value={ownerData.owner_info}
                   onChange={handleOwnerChange}
                 />
               </div>
-
-              {/* Кнопка для отправки данных о владельце */}
-              <button type="button" className="btn-primary" onClick={handleOwnerSubmit}>
-                Отправить информацию о владельце
-              </button>
             </div>
           )}
 

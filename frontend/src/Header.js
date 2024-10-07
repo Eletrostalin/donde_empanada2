@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-const Header = ({ isAuthenticated, handleLogout, handleDeleteAccount }) => {
+
+const Header = ({ isAuthenticated, handleLogout, handleDeleteAccount, setShowLoginModal }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const toggleDropdown = () => {
@@ -29,7 +30,7 @@ const Header = ({ isAuthenticated, handleLogout, handleDeleteAccount }) => {
           )}
         </div>
       ) : (
-        <button onClick={() => window.location.href = '/login'}>Войти</button>
+        <button onClick={() => setShowLoginModal(true)}>Войти</button>
       )}
     </header>
   );

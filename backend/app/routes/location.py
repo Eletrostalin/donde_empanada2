@@ -3,16 +3,23 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from ..config import GOOGLE_MAPS_API_KEY
+import logging  # Добавляем логирование
 
 from .. import models, schemas
 from ..database import get_db
 from .auth import get_current_user
 
+# Настройка логирования
+logger = logging.getLogger(__name__)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+logger.addHandler(console_handler)
+logger.setLevel(logging.INFO)
+
 router = APIRouter(
     prefix="/locations",
     tags=["locations"]
 )
-
 
 # Создание новой локации с информацией о владельце (для зарегистрированных пользователей)
 @router.post("/add-location", response_model=schemas.LocationSchema)
@@ -22,6 +29,13 @@ async def create_location_with_owner(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
+    # Логирование полученных данных
+    logger.info(f"Полученные данные локации: {location.dict()}")  # Если Pydantic модель
+    if owner_info:
+        logger.info(f"Полученные данные владельца: {owner_info.dict()}")
+
+    logger.info(f"Попытка создания новой локации пользователем: {current_user.username}")
+
     # Создаем новую локацию
     new_location = models.Location(
         name=location.name,
@@ -35,6 +49,7 @@ async def create_location_with_owner(
         average_check=location.average_check,
         created_by=current_user.id
     )
+    logger.info(f"Создана локация: {location.name}, пользователем: {current_user.username}")
 
     db.add(new_location)
     await db.commit()
@@ -42,6 +57,7 @@ async def create_location_with_owner(
 
     # Если передана информация о владельце, создаем запись в таблице владельцев
     if owner_info:
+        logger.info(f"Добавляем информацию о владельце для локации: {new_location.id}")
         new_owner_info = models.OwnerInfo(
             user_id=current_user.id,
             location_id=new_location.id,  # Привязываем к созданной локации
@@ -53,94 +69,23 @@ async def create_location_with_owner(
 
     return new_location
 
-
-# Получение списка всех локаций (публичный маршрут)
+# Получение списка всех локаций
 @router.get("/", response_model=list[schemas.LocationSchema])
 async def get_locations(db: AsyncSession = Depends(get_db)):
+    logger.info("Получение списка всех локаций")
     stmt = select(models.Location)
     result = await db.execute(stmt)
     locations = result.scalars().all()
     return locations
 
-# Получение конкретной локации по ID (публичный маршрут)
+# Получение конкретной локации по ID
 @router.get("/{location_id}", response_model=schemas.LocationSchema)
 async def get_location(location_id: int, db: AsyncSession = Depends(get_db)):
+    logger.info(f"Получение локации с ID: {location_id}")
     stmt = select(models.Location).where(models.Location.id == location_id)
     result = await db.execute(stmt)
     location = result.scalar_one_or_none()
     if location is None:
+        logger.warning(f"Локация с ID: {location_id} не найдена")
         raise HTTPException(status_code=404, detail="Location not found")
     return location
-
-
-# Обновление информации о локации (для всех зарегистрированных пользователей)
-@router.put("/{location_id}", response_model=schemas.LocationSchema)
-async def update_location(location_id: int, location_data: schemas.LocationSchema, db: AsyncSession = Depends(get_db),
-                          current_user=Depends(get_current_user)):
-    stmt = select(models.Location).where(models.Location.id == location_id)
-    result = await db.execute(stmt)
-    location = result.scalar_one_or_none()
-
-    if location is None:
-        raise HTTPException(status_code=404, detail="Location not found")
-
-    # Обновляем информацию о локации
-    location.name = location_data.name
-    location.address = location_data.address
-    location.working_hours_start = location_data.working_hours_start
-    location.working_hours_end = location_data.working_hours_end
-    location.average_check = location_data.average_check
-
-    await db.commit()
-    await db.refresh(location)
-    return location
-
-
-# Удаление локации (только для администраторов, сейчас объявим функцию с pass)
-@router.delete("/{location_id}")
-async def delete_location(location_id: int, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
-    # Проверка роли администратора
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    stmt = select(models.Location).where(models.Location.id == location_id)
-    result = await db.execute(stmt)
-    location = result.scalar_one_or_none()
-
-    if location is None:
-        raise HTTPException(status_code=404, detail="Location not found")
-
-    # Пока реализуем как pass, позже добавим удаление
-    pass
-
-
-
-# Добавление информации о владельце
-@router.post("/", response_model=schemas.OwnerInfoSchema)
-async def create_owner_info(owner_info: schemas.OwnerInfoSchema, db: AsyncSession = Depends(get_db),
-                            current_user=Depends(get_current_user)):
-    # Проверяем, существует ли локация
-    stmt = select(models.Location).where(models.Location.id == owner_info.location_id)
-    result = await db.execute(stmt)
-    location = result.scalar_one_or_none()
-
-    if location is None:
-        raise HTTPException(status_code=404, detail="Локация не найдена")
-
-    # Проверяем, что пользователь является владельцем локации
-    if location.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="Недостаточно прав для добавления информации о владельце")
-
-    # Добавляем информацию о владельце
-    new_owner_info = models.OwnerInfo(
-        user_id=current_user.id,
-        location_id=owner_info.location_id,
-        website=owner_info.website,
-        owner_info=owner_info.owner_info
-    )
-
-    db.add(new_owner_info)
-    await db.commit()
-    await db.refresh(new_owner_info)
-
-    return new_owner_info

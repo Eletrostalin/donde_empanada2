@@ -3,6 +3,11 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, root_validator, model_validator
 from typing import Optional
 
+# Схема для токена
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 # Модель регистрации
 class RegistrationSchema(BaseModel):
     username: str = Field(..., max_length=150, pattern='^[a-zA-Z]+$')
@@ -39,7 +44,6 @@ class LocationSchema(BaseModel):
     working_hours_start: str = Field(..., description="Начало рабочего времени", example="09:00")
     working_hours_end: str = Field(..., description="Конец рабочего времени", example="21:00")
     average_check: Optional[int] = Field(None, ge=2000, le=5000, description="Средний чек, если известен", example=3000)
-    created_by: int = Field(..., description="ID пользователя, создавшего локацию")
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
