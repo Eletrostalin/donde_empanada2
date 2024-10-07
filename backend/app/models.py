@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, func
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, func, Time
 from sqlalchemy.orm import relationship
 from passlib.hash import bcrypt
 from datetime import datetime
@@ -37,8 +37,8 @@ class Location(Base):
     created_by = Column(Integer, ForeignKey('user.id'), nullable=False)
     created_at = Column(DateTime, default=func.now())
     address = Column(String(255), nullable=True)
-    working_hours_start = Column(String(5), nullable=False)
-    working_hours_end = Column(String(5), nullable=False)
+    working_hours_start = Column(Time, nullable=False)
+    working_hours_end = Column(Time, nullable=False)
     average_check = Column(Integer, nullable=True)
 
     reviews = relationship('Review', backref='location')
