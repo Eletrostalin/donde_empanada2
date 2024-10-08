@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 
 from pydantic import BaseModel, EmailStr, Field, root_validator, model_validator
 from typing import Optional
@@ -41,8 +41,8 @@ class LocationSchema(BaseModel):
     average_rating: float = Field(0, ge=0, le=5, description="Средний рейтинг, рассчитывается автоматически", example=0)
     rating_count: int = Field(0, ge=0, description="Количество оценок", example=0)
     address: Optional[str] = Field(None, max_length=255)
-    working_hours_start: str = Field(..., description="Начало рабочего времени", example="09:00")
-    working_hours_end: str = Field(..., description="Конец рабочего времени", example="21:00")
+    working_hours_start: time = Field(..., description="Начало рабочего времени", example="09:00")
+    working_hours_end: time = Field(..., description="Конец рабочего времени", example="21:00")
     average_check: Optional[int] = Field(None, ge=2000, le=5000, description="Средний чек, если известен", example=3000)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 

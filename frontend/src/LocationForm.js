@@ -67,13 +67,13 @@ const LocationForm = ({ setShowAddLocationForm, clickedPosition }) => {
             <input type="text" name="address" id="address" placeholder="Введите адрес" required />
           </div>
           <div className="form-group">
-            <label htmlFor="working_hours_start">Начало работы</label>
-            <input type="text" name="working_hours_start" id="working_hours_start" placeholder="09:00" required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="working_hours_end">Конец работы</label>
-            <input type="text" name="working_hours_end" id="working_hours_end" placeholder="18:00" required />
-          </div>
+              <label htmlFor="working_hours_start">Начало работы</label>
+              <input type="time" name="working_hours_start" id="working_hours_start" required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="working_hours_end">Конец работы</label>
+              <input type="time" name="working_hours_end" id="working_hours_end" required />
+            </div>
           <div className="form-group">
             <label htmlFor="average_check">Средний чек (2000-5000)</label>
             <input type="number" name="average_check" id="average_check" placeholder="Введите средний чек" required min="2000" max="5000" />

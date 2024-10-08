@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,6 +38,9 @@ async def create_location_with_owner(
 
     logger.info(f"Попытка создания новой локации пользователем: {current_user.username}")
 
+    working_hours_start = location.working_hours_start
+    working_hours_end = location.working_hours_end
+
     # Создаем новую локацию
     new_location = models.Location(
         name=location.name,
@@ -44,8 +49,8 @@ async def create_location_with_owner(
         average_rating=0,
         rating_count=0,
         address=location.address,
-        working_hours_start=location.working_hours_start,
-        working_hours_end=location.working_hours_end,
+        working_hours_start=working_hours_start,
+        working_hours_end=working_hours_end,
         average_check=location.average_check,
         created_by=current_user.id
     )
@@ -68,7 +73,6 @@ async def create_location_with_owner(
         await db.commit()
 
     return new_location
-
 # Получение списка всех локаций
 @router.get("/", response_model=list[schemas.LocationSchema])
 async def get_locations(db: AsyncSession = Depends(get_db)):
